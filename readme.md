@@ -5,7 +5,9 @@ ratlog is an attempt to create a well defined specification of a common logging 
 The format is language independent and libraries for producing and parsing logs are available in different programming languages.
 
 
-## Are there not enough logging libraries already?
+## Motivation
+
+### Are there not enough logging libraries already?
 
 There are enough libraries. They all have different goals and functionality. Some are simple, some are quiet sofisticated.
 But hardly any two of them produce matching formats - or formatting is not one of their concerns at all and they leave it up to the user.
@@ -114,6 +116,67 @@ file not found
 
 
 
+## Spec Description
+
+a log is always a single line ending with a unix line separator \n
+line breaks in the log must be escaped as \\n.
+
+### spacing
+
+when parsing, white space - spaces and tabs \s and \t are ignored around separators []|:
+when producing it is recommended to :
+- leave no space before and after [
+- leave no space before ]
+- leave a space after ]
+- leave no space before :
+- leave a space after :
+- leave no space around | between tags
+- leave a space around | between fields
+
+
+### tags
+
+  tags are surrounded by []
+  in a tag ] must be escaped as \] and | as \|
+  tags are separated by | without spaces
+  if no tags exist no [] is printed
+
+### message
+
+  in the message [ must be escaped as \[ and | must be escaped as \|
+
+### fields
+
+  each field starts with a |
+  field key and value are separate by :
+  inside a field | must be escaped as \| and : as \:
+
+
+## Examples
+
+
+## Logger and Parser Development
+
+We always welcome new developers to contribute new tooling to the ratlog ecosystem.
+If you would like to create or extend a logging library in a programming language of your choice,
+you can use the *[JSON test suite](./ratloc.testsuite.json)* to verify your logger or parser is producing or consuming logs correctly:
+
+- The test suite contains an array of test cases.
+- Each test case is an object with `"log"` and `"data"` fields.
+- `"log"` is a string containing a log line.
+- `"data"` is an object with `"message"`, `"fields"`, `"tags"` and `"initialTags"` fields. All but `"message are optional"`.
+- `"message"` is a string containing the logged message.
+- `"fields"` is an object with arbitrary fields mapping strings to strings.
+- `"tags"` and `"initialTags"` are arrays of arbitrary strings. `"tags"` should be with each logging and `"initialTags"` should be already set when instanciating the logger. This way `"initialTags"` always show up before the `"tags"` in the produced log lne.
+
+When writing a logging library, use `"data"` as input and verify that the produced line matches `"log"`.
+Since all parameters here are well defined and all values are represented as strings, make sure your logging library is also handling other input passed to it, which - depending of the strictness of the type system of the language you are working with - might have all sorts of shapes. Keep in mind [GX](TODO) - logging should never crash a program.
+
+When writing a parser `"log"` should be parsed and the fields specified in `"data"` should be retrieved from it.
+
+
+
+
 Parsing:
 
 ``` js
@@ -215,4 +278,3 @@ js lib
 
 
 There are some standardized logging formats for specific use cases such as the [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format) for server logs, which is very useful if you are building an HTTP server. But for generic services and applications we have other requirements.
-
