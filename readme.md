@@ -207,11 +207,11 @@ why | pipe not , or something else?
 
 js lib
   link to ratlog.github.io
-  beta warning
   inline docs
   generate docs
   readme
   example
+  typings
 
 
 There are some standardized logging formats for specific use cases such as the [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format) for server logs, which is very useful if you are building an HTTP server. But for generic services and applications we have other requirements.
