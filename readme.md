@@ -5,6 +5,12 @@ ratlog is an attempt to create a well defined specification of a common logging 
 The format is language independent and libraries for producing and parsing logs are available in different programming languages.
 
 
+## Disclaimer
+
+The ratlog specification is still in draft modus and might be subject to breaking changes.
+We try our best to publish a stable version as soon as possible.
+
+
 ## Motivation
 
 ### Are there not enough logging libraries already?
@@ -278,3 +284,8 @@ js lib
 
 
 There are some standardized logging formats for specific use cases such as the [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format) for server logs, which is very useful if you are building an HTTP server. But for generic services and applications we have other requirements.
+
+
+## Licsense
+
+[MIT](./license)
