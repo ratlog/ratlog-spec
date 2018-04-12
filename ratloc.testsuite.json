@@ -1,5 +1,11 @@
 [
   {
+    "log": "\n",
+    "data": {
+      "message": ""
+    }
+  },
+  {
     "log": "hi\n",
     "data": {
       "message": "hi"

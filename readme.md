@@ -124,38 +124,44 @@ file not found
 
 ## Spec Description
 
+text is utf-8 encoded.
+
 a log is always a single line ending with a unix line separator \n
 line breaks in the log must be escaped as \\n.
 
 ### spacing
 
-when parsing, white space - spaces and tabs \s and \t are ignored around separators []|:
-when producing it is recommended to :
-- leave no space before and after [
-- leave no space before ]
-- leave a space after ]
-- leave no space before :
-- leave a space after :
+- leave no space before and after [ surrounding the tags
+- leave no space before ] surrounding the tags
+- leave a space after ] surrounding the tags
+- leave no space before : in fields
+- leave a space after : in fields
 - leave no space around | between tags
 - leave a space around | between fields
-
+- all other spaces are treated as part of values
 
 ### tags
 
-  tags are surrounded by []
-  in a tag ] must be escaped as \] and | as \|
-  tags are separated by | without spaces
-  if no tags exist no [] is printed
+  tags are surrounded by [].
+  in a tag ] must be escaped as \] and | as \|.
+  tags are separated by | without spaces.
+  if no tags exist no [] is printed.
+  tags can be repeated.
+  the sorting of tags may be user defined and may be relevant.
+  in terms of data structures tags should be thought of as a list rather than a set.
 
 ### message
 
-  in the message [ must be escaped as \[ and | must be escaped as \|
+  in the message [ must be escaped as \[ and | must be escaped as \|.
 
 ### fields
 
-  each field starts with a |
-  field key and value are separate by :
-  inside a field | must be escaped as \| and : as \:
+  each field starts with a |.
+  field key and value are separate by :.
+  inside a field | must be escaped as \| and : as \:.
+  the sorting of fields may be user defined and may be relevant, but it is not recommended to do so.
+  field keys may be duplicated, but it is not recommended.
+  In terms of data structures fields should be thought of as a Hashmap/Dictionary rather than a list.
 
 
 ## Examples
@@ -197,77 +203,15 @@ const fields = fieldString.reduce((fs, s) => {
 
 
 docker logs -t
-ts
 grep
 tail -f
 
 
+### timestamps
 
-js
-
-    log('message', { field: 'value' }, 'tag')
-    const fileLog = log.tag('file')
-
-
-example
-
-    log('app starting')
-
-    const counterLog = log.tag('counter')
-
-    const counter = startCounter({
-      max: 2,
-      > log: log.tag('counter')
-      log: (msg, fields = {}, ...tags) => {
-        if (tags.includes('event')) {
-          countMetric(fields.count)
-        }
-        counterLog(msg, fields, tags...)
-      }
-      done: () => {
-        log('app shutting down')
-      }
-    })
-
-    log('app ready')
-
-    const startCounter = ({ max = 0, interval = 3000, log, done }) => {
-      log('starting')
-
-      const count = (x = 1) => {
-        if (x > max) {
-          log('stopped')
-          done()
-          return
-        }
-
-        log('counting', { count: x }, 'event')
-
-        setTimeout(count, interval, x+1)
-      }
-      count()
-
-      log('started')
-    }
-
-
-
-log(string, { [string]: string }, ...string)
-
-first param is message
-if second is object it is used for fields
-if second is string
-
-Show example how to do application with components:
-
-    app starting
-    [counter] started
-    [counter|event] counting | count: 1
-    [counter|event] counting | count: 2
-    [counter] stopped
-    app ready
-    app shutting down
-
+not recommended since supervisor collects them already.
+but can be put in a field if necessary
+or pipe through a tool like `ts`
 
 
 why | pipe not , or something else?
@@ -275,12 +219,16 @@ why | pipe not , or something else?
 
 
 js lib
-  link to ratlog.github.io
   inline docs
   generate docs
   readme
   example
   typings
+
+
+https://brandur.org/logfmt
+
+Want to centralize logs? Easily collect with typical systems such as elastic or fluentd or use the simpler https://github.com/oklog/oklog
 
 
 There are some standardized logging formats for specific use cases such as the [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format) for server logs, which is very useful if you are building an HTTP server. But for generic services and applications we have other requirements.
