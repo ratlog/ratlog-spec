@@ -1,14 +1,50 @@
-# 🐀 ratlog - application logging for humans and machines
+# 🐀 Ratlog - Application Logging for Humans and Machines
 
-ratlog is an attempt to create a well defined specification of a common logging format.
+**Disclaimer**: *The Ratlog specification is still in draft state and might be subject to breaking changes. We try our best to publish a stable version as soon as possible.*
+
+
+Ratlog is an attempt to create a well defined specification of an application logging format.
 
 The format is language independent and libraries for producing and parsing logs are available in different programming languages.
 
 
-## Disclaimer
+## Examples
 
-The ratlog specification is still in draft modus and might be subject to breaking changes.
-We try our best to publish a stable version as soon as possible.
+The most simple Ratlog line is an empty line. Even if no output is produced, the system should know that something happened:
+
+```
+
+```
+
+All log lines should have a *message* describing the event. A log line can consist of simply a *message*:
+
+```
+System started
+```
+
+Logs can be scoped in context or categorized by adding *tags*:
+
+```
+[warn] Disk space running low
+```
+
+*Tags* can be chained and their order can carry meaning:
+
+```
+[fs|warn|critical] Disk space running low
+```
+
+Additional information can be added to logs using *fields*:
+
+```
+File not found | path: /tmp/notfound.txt
+```
+
+Putting everything together, logs consist of *tags*, *message* and *fields*:
+
+```
+[http|request|error] File not found | code: 404 | method: GET | route: /admin
+```
 
 
 ## Motivation
@@ -20,10 +56,7 @@ But hardly any two of them produce matching formats - or formatting is not one o
 
 The closest to a common format on which a few libraries agree on is JSON.
 But JSON doesn't know about logging. Each developer has to come up with their own JSON format.
-And JSON is not made for humans. You need additional tooling to query and read logs.
-
-
-ratlog is a format independent of any specific logging library.
+And JSON is not made for humans. You need additional tooling to query and read logs in a sane way.
 
 
 
@@ -44,12 +77,44 @@ All logging fields should be optional. Logging should never crash your applicati
 
 Logs should try to leave a message for humans
 
-
 Logs should be easy to read for humans.
 
 No external cli to read logs
 
 JSON is hard to read.
+
+
+Logging should be simple: message+fields+tags
+
+Logging is for applications. Applications consist of components.
+Components are stateful units of a system.
+A component doesn't need to know about it's scope but it should return information about its state
+consisting of messages plus, optionally, fields and tags.
+
+
+Modules/libraries/packages shouldn't produce logs.
+Tools have their custom output format but can write logs to stderr.
+Applications/Services write logs to stdout.
+  stderr is for errors (if they are not handled externally) and errors are not logs, they are language specific and should contain stacktraces.
+
+Logs are always a single line.
+
+Play well with docker, docker compose and journalctl.
+
+
+
+## Goals
+
+- Log format independent from any programming language or library
+- Readable by humans, without external tooling
+- Parsable by machines
+- Structured in message, tags and fields
+- Logs should never fail. There are no invalid logs.
+- Every log has a message.
+- Applications don't need to worry about logging timestamps.
+- Applications don't need to know their own name.
+
+
 
 
 Logs should be easy to parse by programs and cli tools (such as grep and cut):
@@ -75,26 +140,7 @@ ignore fields:
     tail logs | cut -d'|' -f1
 
 
-Logging should be simple: message+fields+tags
-
-Logging is for applications. Applications consist of components.
-Components are stateful units of a system.
-A component doesn't need to know about it's scope but it should return information about its state
-consisting of messages plus, optionally, fields and tags.
-
-
-Modules/libraries/packages shouldn't produce logs.
-Tools have their custom output format but can write logs to stderr.
-Applications/Services write logs to stdout.
-  stderr is for errors (if they are not handled externally) and errors are not logs, they are language specific and should contain stacktraces.
-
-Logs are always a single line.
-
-Play well with docker, docker compose and journalctl.
-
-
 ```
-
 connect | 2018-03-29T11:10:29.116Z [file-import|warning] file not found | path: /tmp/notfound.txt | code: 404
 connect | 2018-03-29T11:10:29.116Z [file-import|warning] file not found
 connect | 2018-03-29T11:10:29.116Z [file-import|warning]
@@ -124,7 +170,7 @@ file not found
 
 ## Spec Description
 
-text is utf-8 encoded.
+Text should be utf-8 encoded. If that is not possible, it must b e clearly stated.
 
 a log is always a single line ending with a unix line separator \n
 line breaks in the log must be escaped as \\n.
@@ -169,7 +215,7 @@ line breaks in the log must be escaped as \\n.
 
 ## Logger and Parser Development
 
-We always welcome new developers to contribute new tooling to the ratlog ecosystem.
+We always welcome new developers to contribute new tooling to the Ratlog ecosystem.
 If you would like to create or extend a logging library in a programming language of your choice,
 you can use the *[JSON test suite](./ratloc.testsuite.json)* to verify your logger or parser is producing or consuming logs correctly:
 
@@ -218,20 +264,21 @@ why | pipe not , or something else?
 - conflicts little with natural language and other formats such as JSON
 
 
-js lib
-  inline docs
-  generate docs
-  readme
-  example
-  typings
+### Questions
+
+#### What about [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format)?
+
+There are some standardized logging formats for specific use cases such as the  for server logs, which is very useful if you are building an HTTP server. But for generic services and applications we have other requirements.
+
+#### What about [logfmt](https://brandur.org/logfmt)?
 
 
-https://brandur.org/logfmt
+#### How to query logs across many services?
 
 Want to centralize logs? Easily collect with typical systems such as elastic or fluentd or use the simpler https://github.com/oklog/oklog
 
 
-There are some standardized logging formats for specific use cases such as the [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format) for server logs, which is very useful if you are building an HTTP server. But for generic services and applications we have other requirements.
+
 
 
 ## Licsense
