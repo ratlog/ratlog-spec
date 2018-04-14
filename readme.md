@@ -1,6 +1,6 @@
 # 🐀 Ratlog - Application Logging for Rats, Humans and Machines
 
-**Disclaimer**: *The Ratlog specification is still in draft state and might be subject to breaking changes. We try our best to publish a stable version as soon as possible.*
+**Disclaimer**: *The Ratlog specification is still in draft state and might be subject to breaking changes. We try our best to publish a stable version as soon as possible. [Leave feedback](https://github.com/ratlog/ratlog.github.io/issues) and help us get there faster!*
 
 ----------------------------
 
