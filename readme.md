@@ -2,10 +2,24 @@
 
 **Disclaimer**: *The Ratlog specification is still in draft state and might be subject to breaking changes. We try our best to publish a stable version as soon as possible.*
 
+----------------------------
 
-Ratlog is an attempt to create a well defined specification of an application logging format.
+
+Ratlog is a specification for an application logging format.
 
 The format is language independent and libraries for producing and parsing logs are available in different programming languages.
+
+
+----------------------------
+
+- [Examples](#examples)
+- [Goals](#goals)
+- [Specification](#specification)
+- [Library and Tooling Development](#library-and-tooling-development)
+- [Questions](#questions)
+
+----------------------------
+
 
 
 ## Examples
@@ -47,72 +61,21 @@ Putting everything together, logs consist of *tags*, *message* and *fields*:
 ```
 
 
-## Motivation
-
-### Are there not enough logging libraries already?
-
-There are enough libraries. They all have different goals and functionality. Some are simple, some are quiet sofisticated.
-But hardly any two of them produce matching formats - or formatting is not one of their concerns at all and they leave it up to the user.
-
-The closest to a common format on which a few libraries agree on is JSON.
-But JSON doesn't know about logging. Each developer has to come up with their own JSON format.
-And JSON is not made for humans. You need additional tooling to query and read logs in a sane way.
-
-
-
-The supervisor of a service has a name for a service.
-Services themselves don't need to know their names.
-
-The supervisor already knows how to timestamp logs.
-Docker, Systemd+journalctl, syslog, service | ts
-
-Logs are for humans.
-Events, metrics and other output are collected separately because there are better tools for them (Prometheus, ...).
-
-Errors should not be logged. Other tools are better suited at handling them (Sentry, ...)
-
-Log levels are arbitrary and restricting. Use tags instead.
-
-All logging fields should be optional. Logging should never crash your application.
-
-Logs should try to leave a message for humans
-
-Logs should be easy to read for humans.
-
-No external cli to read logs
-
-JSON is hard to read.
-
-
-Logging should be simple: message+fields+tags
-
-Logging is for applications. Applications consist of components.
-Components are stateful units of a system.
-A component doesn't need to know about it's scope but it should return information about its state
-consisting of messages plus, optionally, fields and tags.
-
-
-Modules/libraries/packages shouldn't produce logs.
-Tools have their custom output format but can write logs to stderr.
-Applications/Services write logs to stdout.
-  stderr is for errors (if they are not handled externally) and errors are not logs, they are language specific and should contain stacktraces.
-
-Logs are always a single line.
-
-Play well with docker, docker compose and journalctl.
-
-
 
 ## Goals
 
 - Log format independent from any programming language or library
-- Readable by humans, without external tooling
+- Logs are one event per single line.
+- Readable by humans, without external tooling (JSON is not readable)
 - Parsable by machines
 - Structured in message, tags and fields
-- Logs should never fail. There are no invalid logs.
+- Logging should never fail. There are no invalid logs.
 - Every log has a message.
 - Applications don't need to worry about logging timestamps.
 - Applications don't need to know their own name.
+- Play well with supervisor tools such as docker and systemd, don't duplicate information they already collect (service name, timestamps, ...)
+- Log levels are arbitrary and restricting. Use tags as flexible alternative instead.
+
 
 
 
@@ -168,7 +131,7 @@ file not found
 
 
 
-## Spec Description
+## Specification
 
 Text should be utf-8 encoded. If that is not possible, it must b e clearly stated.
 
@@ -210,10 +173,7 @@ line breaks in the log must be escaped as \\n.
   In terms of data structures fields should be thought of as a Hashmap/Dictionary rather than a list.
 
 
-## Examples
-
-
-## Logger and Parser Development
+## Library and Tooling Development
 
 We always welcome new developers to contribute new tooling to the Ratlog ecosystem.
 If you would like to create or extend a logging library in a programming language of your choice,
@@ -234,50 +194,96 @@ When writing a parser `"log"` should be parsed and the fields specified in `"dat
 
 
 
+## Questions
 
-Parsing:
+### Are there not enough logging libraries already?
 
-``` js
-const [service, timestamp, scope, message, ...fieldString] = log.split(/\s*[^\\]\|\s*/)
-const fields = fieldString.reduce((fs, s) => {
-  if (!s) return fs
-  const [k, ...vs] = s.split(':')
-  return {...fs, [k]: vs.join(':')}
-}, {})
+There are enough libraries. They all have different goals and functionality. Some are simple, some are quiet sofisticated.
+But hardly any two of them produce matching formats - or formatting is not one of their concerns at all and they leave it up to the user.
+
+The closest to a common format on which a few libraries agree on is JSON.
+But JSON doesn't know about logging. Each developer has to come up with their own JSON format.
+And JSON is not made for humans. You need additional tooling to query and read logs in a sane way.
+
+
+### Why doesn't Ratlog come with timestamps?
+
+Timestamps are a fundamental part of evented data such as application logs.
+
+However in the context applications are embedded in a supervisor that is collecting the logs most likely already adds timestamp anyways.
+Therefore there is no need to duplicate the information.
+
+If you have a [Docker](https://docker.com/) setup and you run `docker logs -t myapp`, you get logs displayed with timestamps:
+
+```
+2018-03-29T11:10:29.116Z [file-import|warning] file not found | path: /tmp/notfound.txt | code: 404
 ```
 
+Similarly when using Systemd `journalctl -u myapp` includes timestamps in its output:
+
+```
+Apr 13 22:15:34 myhost myapp[1234]: [file-import|warning] file not found | path: /tmp/notfound.txt | code: 404
+```
+
+Running a standalone application `ts` can add timestamps easily:
+
+```
+$ ./myapp | ts
+Apr 14 12:03:38 [file-import|warning] file not found | path: /tmp/notfound.txt | code: 404
+```
+
+And in case you really need the application to log timestamps directly, nothing is stopping you from adding a *field* for it.
 
 
-docker logs -t
-grep
-tail -f
+### Why use `[]` and `|` as separators?
+
+They conflict little with natural language or other popular formats such as JSON or XML/HTML,
+while at the same time being common enough that you should be able to locate them on your keyboard.
 
 
-### timestamps
-
-not recommended since supervisor collects them already.
-but can be put in a field if necessary
-or pipe through a tool like `ts`
-
-
-why | pipe not , or something else?
-- conflicts little with natural language and other formats such as JSON
-
-
-### Questions
-
-#### What about [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format)?
+### What about [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format)?
 
 There are some standardized logging formats for specific use cases such as the  for server logs, which is very useful if you are building an HTTP server. But for generic services and applications we have other requirements.
 
-#### What about [logfmt](https://brandur.org/logfmt)?
+
+### What about [logfmt](https://brandur.org/logfmt)?
 
 
-#### How to query logs across many services?
+### How to query logs across many services?
 
 Want to centralize logs? Easily collect with typical systems such as elastic or fluentd or use the simpler https://github.com/oklog/oklog
 
 
+### How do I collect metrics from Ratlog logs?
+
+Logs are for humans. Metrics, events and other output are better collected separately because there are tools more suited for them for them (such as [Prometheus](https://prometheus.io/) for metrics). Metrics should be handled different to text based logs. Metrics can be aggregated and have very different performance characteristics and usage goals.
+
+
+### How do I log errors?
+
+Errors should not be logged. Other tools are better suited at handling them (such as [Sentry](https://github.com/getsentry/sentry)).
+Tools specialized on errors can provide many useful features such as grouping, silencing or linking stacktraces to source code.
+Those features are not in the scope of logging.
+
+
+### How do I add Ratlog to my libraries/modules/packages?
+
+Libraries shouldn't produce logs.
+They should return machine readable information about their state to the application code making use of the library.
+The application should be responsible for deciding on what and how to log the state.
+
+
+### Should I use Ratlog for my CLI tool?
+
+Certain CLI tools produce generic output similar to application logs.
+In those scenarios Ratlog might be a great way of displaying consistent, readable, parsable output.
+
+Many tools, however, produce very specific output.
+For example, it wouldn't be helpful if `git` would try to display its information as Ratlog.
+
+Mostly the output tools write to *stdout* is too specific and not log-like.
+But tools sometimes like to provide additional information about their state via *stderr*.
+That might be a good usecase of Ratlog.
 
 
 
