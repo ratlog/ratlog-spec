@@ -1,4 +1,4 @@
-# 🐀 Ratlog - Application Logging for Humans and Machines
+# 🐀 Ratlog - Application Logging for Rats, Humans and Machines
 
 **Disclaimer**: *The Ratlog specification is still in draft state and might be subject to breaking changes. We try our best to publish a stable version as soon as possible.*
 
@@ -30,35 +30,37 @@ The most simple Ratlog line is an empty line. Even if no output is produced, the
 
 ```
 
-All log lines should have a *message* describing the event. A log line can consist of simply a *message*:
+All log lines should have a **message** describing the event:
 
 ```
 System started
 ```
 
-Logs can be scoped in context or categorized by adding *tags*:
+Logs can be scoped in context or categorized by adding **tags**:
 
 ```
 [warn] Disk space running low
 ```
 
-*Tags* can be chained and their order can carry meaning:
+**Tags** can be chained and their order can carry meaning:
 
 ```
 [fs|warn|critical] Disk space running low
 ```
 
-Additional information can be added to logs using *fields*:
+Additional information can be added to logs using **fields**:
 
 ```
 File not found | path: /tmp/notfound.txt
 ```
 
-Putting everything together, logs consist of *tags*, *message* and *fields*:
+Putting everything together, a log line consist of **tags**, **message** and **fields**:
 
 ```
 [http|request|error] File not found | code: 404 | method: GET | route: /admin
 ```
+
+----------------------------
 
 Logs should be easy to parse by programs and CLI tools such as `grep` and `cut`:
 
@@ -92,6 +94,8 @@ cat ./logs.rat | cut -d'|' -f1
 cat ./logs.rat | cut -d] -f2-
 ```
 
+----------------------------
+
 
 
 ## Goals
@@ -108,6 +112,8 @@ cat ./logs.rat | cut -d] -f2-
 - Applications don't need to know their own name.
 - Play well with supervisor tools such as docker and systemd. Don't duplicate information they already collect such as service names and timestamps.
 
+----------------------------
+
 
 
 ## Specification
@@ -116,13 +122,13 @@ A Ratlog line consists of the segements **tags**, **message** and **fields**, in
 
 ### Encoding
 
-Text should be **UTF-8** encoded. If that is not possible, the reason and encoding must be clearly stated.
+- Text should be **UTF-8** encoded. If that is not possible, the reason and encoding must be clearly stated.
 
 
 ### Lines
 
-A log is always a single line ending with a unix line separator `\n`.
-Line breaks in the log data must be escaped as `\\n`.
+- A log is always a single line ending with a unix line separator `\n`.
+- Line breaks in the log data must be escaped as `\\n`.
 
 
 ### Spacing
@@ -172,6 +178,8 @@ Line breaks in the log data must be escaped as `\\n`.
 - The sorting of fields is not relevant and may be ignored.
 - In terms of data structures fields should be thought of as a hashmap/dictionary rather than a list.
 
+----------------------------
+
 
 
 ## Library and Tooling Development
@@ -192,6 +200,8 @@ When writing a logging library, use `"data"` as input and verify that the produc
 Since all parameters here are well defined and all values are represented as strings, make sure your logging library is also handling other input passed to it, which - depending of the strictness of the type system of the language you are working with - might have all sorts of shapes. Keep in mind [GX](TODO) - logging should never crash a program.
 
 When writing a parser `"log"` should be parsed and the fields specified in `"data"` should be retrieved from it.
+
+----------------------------
 
 
 
@@ -312,6 +322,8 @@ You also don't want to log more than absolutely necessary and especially don't w
 
 They conflict little with natural language or other popular formats such as JSON or XML/HTML,
 while at the same time being common enough that you should be able to locate them on your keyboard.
+
+----------------------------
 
 
 
