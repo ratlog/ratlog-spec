@@ -5,12 +5,14 @@
 ----------------------------
 
 
-Ratlog is a specification for an application logging format.
+Ratlog is a specification of an application logging format.
 
 The format is language independent and libraries for producing and parsing logs are available in different programming languages.
 
 
 ----------------------------
+
+## Contents
 
 - [Examples](#examples)
 - [Goals](#goals)
@@ -36,7 +38,7 @@ All log lines should have a **message** describing the event:
 System started
 ```
 
-Logs can be scoped in context or categorized by adding **tags**:
+Logs can be scoped in context or categorized by adding **tags:**
 
 ```
 [warn] Disk space running low
@@ -48,13 +50,13 @@ Logs can be scoped in context or categorized by adding **tags**:
 [fs|warn|critical] Disk space running low
 ```
 
-Additional information can be added to logs using **fields**:
+Additional information can be added to logs using **fields:**
 
 ```
 File not found | path: /tmp/notfound.txt
 ```
 
-Putting everything together, a log line consist of **tags**, **message** and **fields**:
+Putting everything together, a log line consists of **tags**, **message** and **fields:**
 
 ```
 [http|request|error] File not found | code: 404 | method: GET | route: /admin
@@ -62,7 +64,7 @@ Putting everything together, a log line consist of **tags**, **message** and **f
 
 ----------------------------
 
-Logs should be easy to parse by programs and CLI tools such as `grep` and `cut`:
+Logs should be easy to parse by programs and CLI tools such as `grep` and `cut` :
 
 - Filter by tag:
 
@@ -175,7 +177,7 @@ A Ratlog line consists of the segements **tags**, **message** and **fields**, in
 - If a field's value is empty, the separator `: ` may be ommited.
 - Field keys must be unique.
 - If any field is invalid, the fields segment is ignored and all potential field characters, even those if valid fields, are treated as part of the *message* segement instead.
-- The sorting of fields is not relevant and may be ignored.
+- The sorting of fields is not relevant and may be ignored. It is recommended to sort fields alphabetically.
 - In terms of data structures fields should be thought of as a hashmap/dictionary rather than a list.
 
 ----------------------------
@@ -188,18 +190,20 @@ We always welcome new developers to contribute new tooling to the Ratlog ecosyst
 If you would like to create or extend a logging library in a programming language of your choice,
 you can use the *[JSON test suite](./ratloc.testsuite.json)* to verify your logger or parser is producing or consuming logs correctly:
 
-- The test suite contains an array of test cases.
+- The test suite contains a JSON object with the fields `"meta"`, `"generic"` and `"parsing"`.
+- The fields `"generic"` and `"parsing"` contain array of test cases.
+- `"parsing"` is only for validating parsers.
 - Each test case is an object with `"log"` and `"data"` fields.
 - `"log"` is a string containing a log line.
-- `"data"` is an object with `"message"`, `"fields"`, `"tags"` and `"initialTags"` fields. All but `"message are optional"`.
+- `"data"` is an object with `"message"`, `"fields"` and `"tags"` fields. All but `"message are optional"`.
 - `"message"` is a string containing the logged message.
 - `"fields"` is an object with arbitrary fields mapping strings to strings.
-- `"tags"` and `"initialTags"` are arrays of arbitrary strings. `"tags"` should be with each logging and `"initialTags"` should be already set when instanciating the logger. This way `"initialTags"` always show up before the `"tags"` in the produced log lne.
+- `"tags"` is an array of arbitrary strings.
 
-When writing a logging library, use `"data"` as input and verify that the produced line matches `"log"`.
-Since all parameters here are well defined and all values are represented as strings, make sure your logging library is also handling other input passed to it, which - depending of the strictness of the type system of the language you are working with - might have all sorts of shapes. Keep in mind [GX](TODO) - logging should never crash a program.
+When writing a logging library only use `generic`. Use `"data"` as input and verify that the produced line matches `"log"`.
+Since all parameters here are well defined and all values are represented as strings, make sure your logging library is also handling other input passed to it, which - depending of the strictness of the type system of the language you are working with - might have all sorts of shapes. Keep in mind - logging should never crash a program.
 
-When writing a parser `"log"` should be parsed and the fields specified in `"data"` should be retrieved from it.
+When writing a parser `"log"` should be parsed and the fields specified in `"data"` should be retrieved from it. Parser should also be able to handle the test cases listed under `"parsing"`.
 
 ----------------------------
 
@@ -227,20 +231,20 @@ Therefore there is no need to duplicate the information.
 If you have a [Docker](https://docker.com/) setup and you run `docker logs -t myapp`, you get logs displayed with timestamps:
 
 ```
-2018-03-29T11:10:29.116Z [file-import|warning] file not found | path: /tmp/notfound.txt | code: 404
+2018-03-29T11:10:29.116Z [file-import|warning] file not found | code: 404 | path: /tmp/notfound.txt
 ```
 
 Similarly when using Systemd `journalctl -u myapp` includes timestamps in its output:
 
 ```
-Apr 13 22:15:34 myhost myapp[1234]: [file-import|warning] file not found | path: /tmp/notfound.txt | code: 404
+Apr 13 22:15:34 myhost myapp[1234]: [file-import|warning] file not found | code: 404 | path: /tmp/notfound.txt
 ```
 
 Running a standalone application `ts` can add timestamps easily:
 
 ```
 $ ./myapp | ts
-Apr 14 12:03:38 [file-import|warning] file not found | path: /tmp/notfound.txt | code: 404
+Apr 14 12:03:38 [file-import|warning] file not found | code: 404 | path: /tmp/notfound.txt
 ```
 
 And in case you really need the application to log timestamps directly, nothing is stopping you from adding a *field* for it.

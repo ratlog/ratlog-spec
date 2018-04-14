@@ -3,7 +3,7 @@
     "version": "alpha",
     "source": "https://ratlog.github.io/"
   },
-  "testcases": [
+  "generic": [
     {
       "log": "\n",
       "data": {
@@ -36,12 +36,12 @@
       }
     },
     {
-      "log": "[event] counting event | event: one | count: 1\n",
+      "log": "[event] counting event | count: 1 | event: one\n",
       "data": {
         "message": "counting event",
         "fields": {
-          "event": "one",
-          "count": "1"
+          "count": "1",
+          "event": "one"
         },
         "tags": [
           "event"
@@ -49,12 +49,12 @@
       }
     },
     {
-      "log": "[event|count] counting event | event: one | count: 1\n",
+      "log": "[event|count] counting event | count: 1 | event: one\n",
       "data": {
         "message": "counting event",
         "fields": {
-          "event": "one",
-          "count": "1"
+          "count": "1",
+          "event": "one"
         },
         "tags": [
           "event",
@@ -63,15 +63,15 @@
       }
     },
     {
-      "log": "logger failed calling .toString(): TypeError: Cannot read property 'toString' of undefined\n",
+      "log": "\n",
       "data": {}
     },
     {
-      "log": "\\[object Object\\]\n",
+      "log": " | count: 1 | event: 1\n",
       "data": {
         "fields": {
-          "event": "one",
-          "count": "1"
+          "count": "1",
+          "event": "1"
         }
       }
     },
@@ -85,7 +85,7 @@
       }
     },
     {
-      "log": "\\[hello \\| world\\]\n",
+      "log": "\\[hello \\| world]\n",
       "data": {
         "message": "[hello | world]"
       }
@@ -94,9 +94,33 @@
       "log": "[tag] hi\n",
       "data": {
         "message": "hi",
-        "initialTags": [
+        "tags": [
           "tag"
         ]
+      }
+    },
+    {
+      "log": "[tag] hi | yo\n",
+      "data": {
+        "message": "hi",
+        "tags": [
+          "tag"
+        ],
+        "fields": {
+          "yo": null
+        }
+      }
+    },
+    {
+      "log": "[tag] hi | yo :  \n",
+      "data": {
+        "message": "hi",
+        "tags": [
+          "tag"
+        ],
+        "fields": {
+          "yo ": " "
+        }
       }
     },
     {
@@ -106,9 +130,98 @@
         "fields": {
           "count": "1"
         },
-        "initialTags": [
+        "tags": [
           "tag"
         ]
+      }
+    }
+  ],
+  "parsing": [
+    {
+      "log": "count | count 1\n",
+      "data": {
+        "message": "count| count 1"
+      }
+    },
+    {
+      "log": "[tag hi\n",
+      "data": {
+        "message": "[tag hi"
+      }
+    },
+    {
+      "log": "hi |\n",
+      "data": {
+        "message": "hi |"
+      }
+    },
+    {
+      "log": "hi |  \n",
+      "data": {
+        "message": "hi |",
+        "fields": {
+          " ": null
+        }
+      }
+    },
+    {
+      "log": "hi | \n",
+      "data": {
+        "message": "hi |",
+        "fields": {
+          "": null
+        }
+      }
+    },
+    {
+      "log": "hi | hi: |\n",
+      "data": {
+        "message": "hi |hi: |"
+      }
+    },
+    {
+      "log": "hi |hi\n",
+      "data": {
+        "message": "hi |hi"
+      }
+    },
+    {
+      "log": "hi | hi:|\n",
+      "data": {
+        "message": "hi |hi:|"
+      }
+    },
+    {
+      "log": "[tag] hi | yo : \n",
+      "data": {
+        "message": "hi",
+        "tags": [
+          "tag"
+        ],
+        "fields": {
+          "yo ": null
+        }
+      }
+    },
+    {
+      "log": "[tag] hi | yo :\n",
+      "data": {
+        "message": "hi | yo :",
+        "tags": [
+          "tag"
+        ]
+      }
+    },
+    {
+      "log": "[tag] hi | yo: \n",
+      "data": {
+        "message": "hi",
+        "tags": [
+          "tag"
+        ],
+        "fields": {
+          "yo": null
+        }
       }
     }
   ]
