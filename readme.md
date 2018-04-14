@@ -1,4 +1,4 @@
-# 🐀 Ratlog - Application Logging for Rats, Humans and Machines
+# 🐀 Ratlog - Application Logging for Humans and Machines
 
 **Disclaimer**: *The Ratlog specification is still in draft state and might be subject to breaking changes. We try our best to publish a stable version as soon as possible.*
 
@@ -92,63 +92,86 @@ cat ./logs.rat | cut -d'|' -f1
 cat ./logs.rat | cut -d] -f2-
 ```
 
+
+
 ## Goals
 
-- Log format independent from any programming language or library
-- Logs are one event per single line.
-- Readable by humans, without external tooling (JSON is not readable)
-- Parsable by machines
-- Structured in message, tags and fields
+- Create a log format independent from any programming language or library.
+- Logs should be readable by humans, without external tooling. JSON is not readable.
+- Logs should be parsable by machines.
 - Logging should never fail. There are no invalid logs.
-- Every log has a message.
+- Provide semantics useful for the majority of application logging. More specific semantics can be built on top of Ratlog using tags and fields.
+- Every log has a message, even if it is empty.
+- Log levels are arbitrary and restricting. Use tags as flexible alternative instead.
+- A log event is always a single line of text.
 - Applications don't need to worry about logging timestamps.
 - Applications don't need to know their own name.
-- Play well with supervisor tools such as docker and systemd, don't duplicate information they already collect (service name, timestamps, ...)
-- Log levels are arbitrary and restricting. Use tags as flexible alternative instead.
-- Provide semantics useful for the majority of application logging. More specific sematics can be built on top of Ratlog using tags and fields.
+- Play well with supervisor tools such as docker and systemd. Don't duplicate information they already collect such as service names and timestamps.
 
 
 
 ## Specification
 
-Text should be utf-8 encoded. If that is not possible, it must b e clearly stated.
+A Ratlog line consists of the segements **tags**, **message** and **fields**, in this order.
 
-a log is always a single line ending with a unix line separator \n
-line breaks in the log must be escaped as \\n.
+### Encoding
 
-### spacing
+Text should be **UTF-8** encoded. If that is not possible, the reason and encoding must be clearly stated.
 
-- leave no space before and after [ surrounding the tags
-- leave no space before ] surrounding the tags
-- leave a space after ] surrounding the tags
-- leave no space before : in fields
-- leave a space after : in fields
-- leave no space around | between tags
-- leave a space around | between fields
-- all other spaces are treated as part of values
 
-### tags
+### Lines
 
-  tags are surrounded by [].
-  in a tag ] must be escaped as \] and | as \|.
-  tags are separated by | without spaces.
-  if no tags exist no [] is printed.
-  tags can be repeated.
-  the sorting of tags may be user defined and may be relevant.
-  in terms of data structures tags should be thought of as a list rather than a set.
+A log is always a single line ending with a unix line separator `\n`.
+Line breaks in the log data must be escaped as `\\n`.
 
-### message
 
-  in the message [ must be escaped as \[ and | must be escaped as \|.
+### Spacing
 
-### fields
+- Leave no space before and after `[` surrounding tags.
+- Leave no space before `]` surrounding tags.
+- Leave a space after `]` surrounding tags.
+- Leave no space before `:` in fields.
+- Leave a space after `:` in fields.
+- Leave no space around `|` between tags.
+- Leave a space around `|` infront of fields.
+- All other spaces are treated as data.
 
-  each field starts with a |.
-  field key and value are separate by :.
-  inside a field | must be escaped as \| and : as \:.
-  the sorting of fields may be user defined and may be relevant, but it is not recommended to do so.
-  field keys may be duplicated, but it is not recommended.
-  In terms of data structures fields should be thought of as a Hashmap/Dictionary rather than a list.
+
+### Tags
+
+- The tags segement must start at the beginning of the line.
+- The tags segement starts with `[` and ends with `]`.
+- If there is no matching closing token, there is no tags segement and
+  the opening `[` and all following characters are treated as part of the *message* segment.
+- Tags are separated by `|` without spaces.
+- Inside the tags segment `]` can be escaped as `\]` and `|` as `\|`.
+- An empty tag value is still a valid tag.
+- The tags segment can be ommited. If no tags exist no `[]` is printed.
+  `[]` represents a single empty tag.
+- Tag values are not unique. They can be repeated.
+- The sorting of tags *may* be user-defined and *may* be relevant.
+- In terms of data structures tags, should be thought of as a *list* rather than a *set*.
+
+
+### Message
+
+- The message segement always exists, even if it is completely empty. It is never omitted.
+- In the message segement `[` can be escaped as `\[` and `|` as `\|`.
+
+
+### Fields
+
+- The fields segement may be ommited if no fields exist.
+- Each field starts with `|`.
+- Field key and value are separate by `:` followed by a space.
+- Inside a field `|` can be escaped as `\|` and `:` as `\:`.
+- A completely empty field key or value is still valid.
+- If a field's value is empty, the separator `: ` may be ommited.
+- Field keys must be unique.
+- If any field is invalid, the fields segment is ignored and all potential field characters, even those if valid fields, are treated as part of the *message* segement instead.
+- The sorting of fields is not relevant and may be ignored.
+- In terms of data structures fields should be thought of as a hashmap/dictionary rather than a list.
+
 
 
 ## Library and Tooling Development
@@ -213,12 +236,6 @@ Apr 14 12:03:38 [file-import|warning] file not found | path: /tmp/notfound.txt |
 And in case you really need the application to log timestamps directly, nothing is stopping you from adding a *field* for it.
 
 
-### Why use `[]` and `|` as separators?
-
-They conflict little with natural language or other popular formats such as JSON or XML/HTML,
-while at the same time being common enough that you should be able to locate them on your keyboard.
-
-
 ### What about [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format)?
 
 There are some standardized logging formats for specific use cases such as [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format)  for server logs, which is very useful if you are building an HTTP server.
@@ -239,24 +256,7 @@ but Ratlog additionally gives you the semantics of *message* and *tags*, which I
 If you rather only have *field* semantics, logfmt is a great and even simpler alternative to Ratlog.
 
 
-### How to query logs across many services?
-
-Want to centralize logs? Easily collect with typical systems such as elastic or fluentd or use the simpler https://github.com/oklog/oklog
-
-
-### How do I collect metrics from Ratlog logs?
-
-Logs are for humans. Metrics, events and other output are better collected separately because there are tools more suited for them for them (such as [Prometheus](https://prometheus.io/) for metrics). Metrics should be handled different to text based logs. Metrics can be aggregated and have very different performance characteristics and usage goals.
-
-
-### How do I log errors?
-
-Errors should not be logged. Other tools are better suited at handling them (such as [Sentry](https://github.com/getsentry/sentry)).
-Tools specialized on errors can provide many useful features such as grouping, silencing or linking stacktraces to source code.
-Those features are not in the scope of logging.
-
-
-### How do I add Ratlog to my libraries/modules/packages?
+### How do I add Ratlog to my library/module/package?
 
 Libraries shouldn't produce logs.
 They should return machine readable information about their state to the application code making use of the library.
@@ -274,6 +274,44 @@ For example, it wouldn't be helpful if `git` would try to display its informatio
 Mostly the output tools write to *stdout* is too specific and not log-like.
 But tools sometimes like to provide additional information about their state via *stderr*.
 That might be a good usecase of Ratlog.
+
+
+### How do I collect metrics from Ratlog logs?
+
+Logs are for humans. Metrics, events and other output are better collected separately because there are tools more suited for them for them (such as [Prometheus](https://prometheus.io/) for metrics). Metrics should be handled different to text based logs. Metrics can be aggregated and have very different performance characteristics and usage goals.
+
+
+### How do I log errors?
+
+Errors should not be logged. Other tools are better suited at handling them (such as [Sentry](https://github.com/getsentry/sentry)).
+Tools specialized on errors can provide many useful features such as grouping, silencing or linking stacktraces to source code.
+Those features are not in the scope of logging.
+
+
+### How do I query logs across many services?
+
+Ratlog is just text.
+You can collect logs from many services in a central place like you are already used to with tools such as
+[fluentd](https://www.fluentd.org/),
+[Elastic](https://www.elastic.co/elk-stack),
+[CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/WhatIsCloudWatchLogs.html) or
+[OK Log](https://github.com/oklog/oklog).
+
+
+### Why are there no nested fields or lists inside fields?
+
+Ratlog tries to be as simple and generic as possible.
+If you have need to store more complex data, custom formats can be built on top of Ratlog.
+It is also possible to store data in a format such as JSON inside a field.
+However, we recommend keeping fields simple.
+That makes the logs easier to read an query.
+You also don't want to log more than absolutely necessary and especially don't write sensitive user data inside logs.
+
+
+### Why use `[]` and `|` as separators?
+
+They conflict little with natural language or other popular formats such as JSON or XML/HTML,
+while at the same time being common enough that you should be able to locate them on your keyboard.
 
 
 
