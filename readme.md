@@ -60,7 +60,37 @@ Putting everything together, logs consist of *tags*, *message* and *fields*:
 [http|request|error] File not found | code: 404 | method: GET | route: /admin
 ```
 
+Logs should be easy to parse by programs and CLI tools such as `grep` and `cut`:
 
+- Filter by tag:
+
+```
+cat ./logs.rat | grep '\[|\|warn'
+```
+
+- Filter by field:
+
+```
+cat ./logs.rat | grep '| code: 404'
+```
+
+- Count tag:
+
+```
+cat ./logs.rat | grep -c '\[|\|warn'
+```
+
+- Ignore fields:
+
+```
+cat ./logs.rat | cut -d'|' -f1
+```
+
+- Ignore tags:
+
+```
+cat ./logs.rat | cut -d] -f2-
+```
 
 ## Goals
 
@@ -75,59 +105,7 @@ Putting everything together, logs consist of *tags*, *message* and *fields*:
 - Applications don't need to know their own name.
 - Play well with supervisor tools such as docker and systemd, don't duplicate information they already collect (service name, timestamps, ...)
 - Log levels are arbitrary and restricting. Use tags as flexible alternative instead.
-
-
-
-
-
-Logs should be easy to parse by programs and cli tools (such as grep and cut):
-
-Find warnings:
-
-    tail logs | grep '| warning'
-
-Find by field:
-
-    tail logs | grep '| code: 404'
-
-Filter by scope:
-
-    tail logs | grep '\[file'
-
-Count lines of scope:
-
-    tail logs | grep -c '\[file-import\]'
-
-ignore fields:
-
-    tail logs | cut -d'|' -f1
-
-
-```
-connect | 2018-03-29T11:10:29.116Z [file-import|warning] file not found | path: /tmp/notfound.txt | code: 404
-connect | 2018-03-29T11:10:29.116Z [file-import|warning] file not found
-connect | 2018-03-29T11:10:29.116Z [file-import|warning]
-connect | 2018-03-29T11:10:29.116Z [file-import] | path: /tmp/notfound.txt | code: 404
-connect | 2018-03-29T11:10:29.116Z [file-import | warning ] | path: /tmp/notfound.txt | code: 404
-connect | 2018-03-29T11:10:29.116Z | path: /tmp/notfound.txt | code: 404
-connect | file not found
-connect | 2018-03-29T11:10:29.116Z file not found
-connect | [file-import] file not found | path: /tmp/notfound.txt | code: 404
-connect | file not found | path: /tmp/notfound.txt | code: 404
-[file-import] file not found | path: /tmp/notfound.txt | code: 404
-file not found | path: /tmp/notfound.txt | code: 404
-| path: /tmp/notfound.txt | code: 404
-file not found | path: /tmp/notfound.txt
-file not found
-[ ] file not found | path: /tmp/notfound.txt | code: 404
-[file-import]  | path: /tmp/notfound.txt | code: 404
-[ ]  | path: /tmp/notfound.txt | code: 404
- | path: /tmp/notfound.txt
-
-|________________________________| |_______________| |______________| |___________________________________|
-                  |                         |                |                           |
-      this part is from docker        dashed-tags        message         additional fields (no nesting)
-```
+- Provide semantics useful for the majority of application logging. More specific sematics can be built on top of Ratlog using tags and fields.
 
 
 
@@ -243,10 +221,22 @@ while at the same time being common enough that you should be able to locate the
 
 ### What about [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format)?
 
-There are some standardized logging formats for specific use cases such as the  for server logs, which is very useful if you are building an HTTP server. But for generic services and applications we have other requirements.
+There are some standardized logging formats for specific use cases such as [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format)  for server logs, which is very useful if you are building an HTTP server.
+
+If you have a more specific output format to use for your domain, you can provide more meaningful context which is great.
+Ratlog tries to be a foundation for generic application logging.
+
+If you build a web server, use Common Log Format.
 
 
 ### What about [logfmt](https://brandur.org/logfmt)?
+
+[logfmt](https://brandur.org/logfmt) describes logs as key-value pairs.
+It is simpler and (arguably) easier to read than JSON.
+It is a great start for adding some structure to log output.
+The key-value semantics of logfmt are similar to *fields* in Ratlog,
+but Ratlog additionally gives you the semantics of *message* and *tags*, which I would argue are generally useful for logging.
+If you rather only have *field* semantics, logfmt is a great and even simpler alternative to Ratlog.
 
 
 ### How to query logs across many services?
