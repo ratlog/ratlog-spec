@@ -26,7 +26,7 @@ The format is language independent and libraries for producing and parsing logs 
 
 ## Examples
 
-The most simple Ratlog line is an empty line. Even if no output is produced, the system should know that something happened:
+The most basic Ratlog line is an empty line. Even if no output is produced, the system should know that something happened:
 
 ```
 
@@ -38,7 +38,7 @@ All log lines should have a **message** describing the event:
 System started
 ```
 
-Logs can be scoped in context or categorized by adding **tags:**
+**Tags** allow to scope logs in context or categorize them:
 
 ```
 [warn] Disk space running low
@@ -112,7 +112,7 @@ cat ./logs.rat | cut -d] -f2-
 - A log event is always a single line of text.
 - Applications don't need to worry about logging timestamps.
 - Applications don't need to know their own name.
-- Play well with supervisor tools such as docker and systemd. Don't duplicate information they already collect such as service names and timestamps.
+- Play well with supervisor tools such as docker and systemd: Don't duplicate information they already collect, such as service names and timestamps.
 
 ----------------------------
 
@@ -129,56 +129,54 @@ A Ratlog line consists of the segements **tags**, **message** and **fields**, in
 
 ### Lines
 
-- A log is always a single line ending with a unix line separator `\n`.
+- A log is always a single line ending with a Unix line separator `\n`.
 - Line breaks in the log data must be escaped as `\\n`.
-
-
-### Spacing
-
-- Leave no space before and after `[` surrounding tags.
-- Leave no space before `]` surrounding tags.
-- Leave a space after `]` surrounding tags.
-- Leave no space before `:` in fields.
-- Leave a space after `:` in fields.
-- Leave no space around `|` between tags.
-- Leave a space around `|` infront of fields.
-- All other spaces are treated as data.
 
 
 ### Tags
 
-- The tags segement must start at the beginning of the line.
-- The tags segement starts with `[` and ends with `]`.
-- If there is no matching closing token, there is no tags segement and
-  the opening `[` and all following characters are treated as part of the *message* segment.
+- The *tags* segement must start at the beginning of the line.
+- The *tags* segement starts with `[` and ends with `]`.
+- Leave no space before and after `[`.
+- Leave no space before `]`.
+- Leave a space after `]`.
 - Tags are separated by `|` without spaces.
-- Inside the tags segment `]` can be escaped as `\]` and `|` as `\|`.
+- Inside the *tags* segment `]` can be escaped as `\]` and `|` as `\|`.
 - An empty tag value is still a valid tag.
-- The tags segment can be ommited. If no tags exist no `[]` is printed.
+- The *tags* segment can be ommited. If no tags exist no `[]` is printed.
   `[]` represents a single empty tag.
+- If there is no matching closing token, there is no *tags* segement and
+  the opening `[` and all following characters are treated as part of the *message* segment.
 - Tag values are not unique. They can be repeated.
 - The sorting of tags *may* be user-defined and *may* be relevant.
-- In terms of data structures tags, should be thought of as a *list* rather than a *set*.
+- In terms of data structures tags, should be thought of as an *ordered list*.
 
 
 ### Message
 
-- The message segement always exists, even if it is completely empty. It is never omitted.
-- In the message segement `[` can be escaped as `\[` and `|` as `\|`.
+- The *message* segement always exists, even if it is completely empty. It is never omitted.
+- In the *message* segement `[` can be escaped as `\[` and `|` as `\|`.
 
 
 ### Fields
 
-- The fields segement may be ommited if no fields exist.
+- The *fields* segement may be ommited if no fields exist.
 - Each field starts with `|`.
+- Leave a space around `|` infront of each field.
 - Field key and value are separate by `:` followed by a space.
+- Space before `:` is treated as part of the field key.
 - Inside a field `|` can be escaped as `\|` and `:` as `\:`.
 - A completely empty field key or value is still valid.
 - If a field's value is empty, the separator `: ` may be ommited.
 - Field keys must be unique.
-- If any field is invalid, the fields segment is ignored and all potential field characters, even those if valid fields, are treated as part of the *message* segement instead.
+- If any field is invalid, the *fields* segment is ignored and all potential field characters, even those containing valid fields, are treated as part of the *message* segement instead.
 - The sorting of fields is not relevant and may be ignored. It is recommended to sort fields alphabetically.
-- In terms of data structures fields should be thought of as a hashmap/dictionary rather than a list.
+- In terms of data structures fields should be thought of as a *hashmap*.
+
+
+### Spacing
+
+- All additional spaces not mentioned above are treated as data.
 
 ----------------------------
 
@@ -188,16 +186,16 @@ A Ratlog line consists of the segements **tags**, **message** and **fields**, in
 
 We always welcome new developers to contribute new tooling to the Ratlog ecosystem.
 If you would like to create or extend a logging library in a programming language of your choice,
-you can use the *[JSON test suite](./ratloc.testsuite.json)* to verify your logger or parser is producing or consuming logs correctly:
+you can use the *[JSON test suite](./ratlog.testsuite.json)* to verify your logger or parser is producing or consuming logs correctly:
 
-- The test suite contains a JSON object with the fields `"meta"`, `"generic"` and `"parsing"`.
-- The fields `"generic"` and `"parsing"` contain array of test cases.
+- The test suite contains a JSON object with the attributes `"meta"`, `"generic"` and `"parsing"`.
+- The attributes `"generic"` and `"parsing"` contain arrays of test cases.
 - `"parsing"` is only for validating parsers.
-- Each test case is an object with `"log"` and `"data"` fields.
+- Each test case is an object with `"log"` and `"data"` attributes.
 - `"log"` is a string containing a log line.
-- `"data"` is an object with `"message"`, `"fields"` and `"tags"` fields. All but `"message are optional"`.
+- `"data"` is an object with `"message"`, `"fields"` and `"tags"` attributes. All but `"message"` are optional.
 - `"message"` is a string containing the logged message.
-- `"fields"` is an object with arbitrary fields mapping strings to strings.
+- `"fields"` is an object with arbitrary attributes mapping strings to strings.
 - `"tags"` is an array of arbitrary strings.
 
 When writing a logging library only use `generic`. Use `"data"` as input and verify that the produced line matches `"log"`.
@@ -225,8 +223,8 @@ And JSON is not made for humans. You need additional tooling to query and read l
 
 Timestamps are a fundamental part of evented data such as application logs.
 
-However in the context applications are embedded in a supervisor that is collecting the logs most likely already adds timestamp anyways.
-Therefore there is no need to duplicate the information.
+However in the context applications are embedded in a supervisor that is collecting the logs most likely already adds timestamps anyways.
+Therefore there is no need to duplicate that information.
 
 If you have a [Docker](https://docker.com/) setup and you run `docker logs -t myapp`, you get logs displayed with timestamps:
 
@@ -240,24 +238,24 @@ Similarly when using Systemd `journalctl -u myapp` includes timestamps in its ou
 Apr 13 22:15:34 myhost myapp[1234]: [file-import|warning] file not found | code: 404 | path: /tmp/notfound.txt
 ```
 
-Running a standalone application `ts` can add timestamps easily:
+Running a standalone application, timestamps can be added easily  by piping the output through `ts`:
 
 ```
 $ ./myapp | ts
 Apr 14 12:03:38 [file-import|warning] file not found | code: 404 | path: /tmp/notfound.txt
 ```
 
-And in case you really need the application to log timestamps directly, nothing is stopping you from adding a *field* for it.
+And in case you really need the application to log timestamps directly, you can simply add a timestamp field.
 
 
 ### What about [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format)?
 
-There are some standardized logging formats for specific use cases such as [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format)  for server logs, which is very useful if you are building an HTTP server.
+There are some standardized logging formats for specific use cases such as the [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format)  for server logs, which is very useful if you are building an HTTP server.
 
-If you have a more specific output format to use for your domain, you can provide more meaningful context which is great.
+If you have a more specific output format to use for your domain, you can provide more meaningful context - which is great.
 Ratlog tries to be a foundation for generic application logging.
 
-If you build a web server, use Common Log Format.
+If you build a web server, have a look at the Common Log Format.
 
 
 ### What about [logfmt](https://brandur.org/logfmt)?
@@ -283,22 +281,22 @@ Certain CLI tools produce generic output similar to application logs.
 In those scenarios Ratlog might be a great way of displaying consistent, readable, parsable output.
 
 Many tools, however, produce very specific output.
-For example, it wouldn't be helpful if `git` would try to display its information as Ratlog.
+For example, it wouldn't be helpful if `git` would try to display its output as Ratlog.
 
-Mostly the output tools write to *stdout* is too specific and not log-like.
+Mostly the output tools write to *stdout* is too specific and not *log-like*.
 But tools sometimes like to provide additional information about their state via *stderr*.
 That might be a good usecase of Ratlog.
 
 
 ### How do I collect metrics from Ratlog logs?
 
-Logs are for humans. Metrics, events and other output are better collected separately because there are tools more suited for them for them (such as [Prometheus](https://prometheus.io/) for metrics). Metrics should be handled different to text based logs. Metrics can be aggregated and have very different performance characteristics and usage goals.
+Logs are for humans. Metrics, events and other output are better collected separately because there are tools better suited for that task (such as [Prometheus](https://prometheus.io/) for metrics). Metrics should be handled different to text based logs. Metrics can be aggregated and have very different performance characteristics and usage goals.
 
 
 ### How do I log errors?
 
 Errors should not be logged. Other tools are better suited at handling them (such as [Sentry](https://github.com/getsentry/sentry)).
-Tools specialized on errors can provide many useful features such as grouping, silencing or linking stacktraces to source code.
+Tools specialized on collecting errors can provide many useful features such as grouping, silencing or linking stacktraces to source code.
 Those features are not in the scope of logging.
 
 
@@ -315,11 +313,11 @@ You can collect logs from many services in a central place like you are already 
 ### Why are there no nested fields or lists inside fields?
 
 Ratlog tries to be as simple and generic as possible.
-If you have need to store more complex data, custom formats can be built on top of Ratlog.
+If you need to store more complex data, custom formats can be built on top of Ratlog.
 It is also possible to store data in a format such as JSON inside a field.
 However, we recommend keeping fields simple.
-That makes the logs easier to read an query.
-You also don't want to log more than absolutely necessary and especially don't write sensitive user data inside logs.
+It makes the logs easier to read an query.
+Don't log more than absolutely necessary and especially don't write sensitive user data inside logs.
 
 
 ### Why use `[]` and `|` as separators?
