@@ -17,6 +17,12 @@
       }
     },
     {
+      "log": "one\\ntwo\\nthree\\n\n",
+      "data": {
+        "message": "one\ntwo\nthree\n"
+      }
+    },
+    {
       "log": "count | count: 1\n",
       "data": {
         "message": "count",
