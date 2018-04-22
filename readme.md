@@ -103,7 +103,7 @@ cat ./logs.rat | cut -d] -f2-
 ## Goals
 
 - Create a log format independent from any programming language or library.
-- Logs should be readable by humans, without external tooling. JSON is not readable.
+- Logs should be readable by humans without external tooling. JSON is not readable.
 - Logs should be parsable by machines.
 - Logging should never fail. There are no invalid logs.
 - Provide semantics useful for the majority of application logging. More specific semantics can be built on top of Ratlog using tags and fields.
@@ -112,7 +112,7 @@ cat ./logs.rat | cut -d] -f2-
 - A log event is always a single line of text.
 - Applications don't need to worry about logging timestamps.
 - Applications don't need to know their own name.
-- Play well with supervisor tools such as docker and systemd: Don't duplicate information they already collect, such as service names and timestamps.
+- Utilize supervisor tools such as docker and systemd: Don't duplicate information they already collect, such as service names and timestamps.
 
 ----------------------------
 
@@ -120,7 +120,7 @@ cat ./logs.rat | cut -d] -f2-
 
 ## Specification
 
-A Ratlog line consists of the segements **tags**, **message** and **fields**, in this order.
+A Ratlog line consists of the segments **tags**, **message** and **fields**, in this order.
 
 ### Encoding
 
@@ -135,17 +135,17 @@ A Ratlog line consists of the segements **tags**, **message** and **fields**, in
 
 ### Tags
 
-- The *tags* segement must start at the beginning of the line.
-- The *tags* segement starts with `[` and ends with `]`.
+- The *tags* segment must start at the beginning of the line.
+- The *tags* segment starts with `[` and ends with `]`.
 - Leave no space before and after `[`.
 - Leave no space before `]`.
 - Leave a space after `]`.
 - Tags are separated by `|` without spaces.
 - Inside the *tags* segment `]` can be escaped as `\]` and `|` as `\|`.
 - An empty tag value is still a valid tag.
-- The *tags* segment can be ommited. If no tags exist no `[]` is printed.
+- The *tags* segment can be omitted. If no tags exist no `[]` is printed.
   `[]` represents a single empty tag.
-- If there is no matching closing token, there is no *tags* segement and
+- If there is no matching closing token, there is no *tags* segment and
   the opening `[` and all following characters are treated as part of the *message* segment.
 - Tag values are not unique. They can be repeated.
 - The sorting of tags *may* be user-defined and *may* be relevant.
@@ -154,22 +154,22 @@ A Ratlog line consists of the segements **tags**, **message** and **fields**, in
 
 ### Message
 
-- The *message* segement always exists, even if it is completely empty. It is never omitted.
-- In the *message* segement `[` can be escaped as `\[` and `|` as `\|`.
+- The *message* segment always exists, even if it is completely empty. It is never omitted.
+- In the *message* segment `[` can be escaped as `\[` and `|` as `\|`.
 
 
 ### Fields
 
-- The *fields* segement may be ommited if no fields exist.
+- The *fields* segment may be omitted if no field exists.
 - Each field starts with `|`.
 - Leave a space around `|` infront of each field.
-- Field key and value are separate by `:` followed by a space.
+- Field key and value are separated by `:` followed by a space.
 - Space before `:` is treated as part of the field key.
 - Inside a field `|` can be escaped as `\|` and `:` as `\:`.
 - A completely empty field key or value is still valid.
-- If a field's value is empty, the separator `: ` may be ommited.
+- If a field's value is empty, the separator `: ` may be omitted.
 - Field keys must be unique.
-- If any field is invalid, the *fields* segment is ignored and all potential field characters, even those containing valid fields, are treated as part of the *message* segement instead.
+- If any field is invalid, the *fields* segment is ignored and all potential field characters, even those containing valid fields, are treated as part of the *message* segment instead.
 - The sorting of fields is not relevant and may be ignored. It is recommended to sort fields alphabetically.
 - In terms of data structures fields should be thought of as a *hashmap*.
 
@@ -211,7 +211,7 @@ When writing a parser `"log"` should be parsed and the fields specified in `"dat
 
 ### Are there not enough logging libraries already?
 
-There are enough libraries. They all have different goals and functionality. Some are simple, some are quiet sofisticated.
+There are enough libraries. They all have different goals and functionality. Some are simple, some are quite sophisticated.
 But hardly any two of them produce matching formats - or formatting is not one of their concerns at all and they leave it up to the user.
 
 The closest to a common format on which a few libraries agree on is JSON.
@@ -238,7 +238,7 @@ Similarly when using Systemd `journalctl -u myapp` includes timestamps in its ou
 Apr 13 22:15:34 myhost myapp[1234]: [file-import|warning] file not found | code: 404 | path: /tmp/notfound.txt
 ```
 
-Running a standalone application, timestamps can be added easily  by piping the output through `ts`:
+Running a standalone application, timestamps can be added easily by piping the output through `ts`:
 
 ```
 $ ./myapp | ts
@@ -329,6 +329,6 @@ while at the same time being common enough that you should be able to locate the
 
 
 
-## Licsense
+## License
 
 [MIT](./license)
