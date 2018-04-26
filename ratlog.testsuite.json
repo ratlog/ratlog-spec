@@ -32,12 +32,12 @@
       }
     },
     {
-      "log": "counting event | event: one | count: 1\n",
+      "log": "counting event | count: 1 | event: one\n",
       "data": {
         "message": "counting event",
         "fields": {
-          "event": "one",
-          "count": "1"
+          "count": "1",
+          "event": "one"
         }
       }
     },
