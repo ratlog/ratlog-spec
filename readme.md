@@ -9,6 +9,12 @@ Ratlog is a specification of an application logging format.
 
 The format is language independent and libraries for producing and parsing logs are available in different programming languages.
 
+While Ratlog specifies a text-based output format, it also provides useful semantics for logging.
+
+Even if not one is bound to use another representation for logs,
+we invite to make use of Ratlog's semantics of *message*, *tags* and *fields.
+
+
 
 ----------------------------
 
@@ -112,7 +118,7 @@ cat ./logs.rat | cut -d] -f2-
 - A log event is always a single line of text.
 - Applications don't need to worry about logging timestamps.
 - Applications don't need to know their own name.
-- Utilize supervisor tools such as docker and systemd: Don't duplicate information they already collect, such as service names and timestamps.
+- Utilize supervisor tools such as docker and SystemD: Don't duplicate information they already collect, such as service names and timestamps.
 
 ----------------------------
 
@@ -162,7 +168,7 @@ A Ratlog line consists of the segments **tags**, **message** and **fields**, in 
 
 - The *fields* segment may be omitted if no field exists.
 - Each field starts with `|`.
-- Leave a space around `|` infront of each field.
+- Leave a space around `|` in front of each field.
 - Field key and value are separated by `:` followed by a space.
 - Space before `:` is treated as part of the field key.
 - Inside a field `|` can be escaped as `\|` and `:` as `\:`.
@@ -221,7 +227,7 @@ And JSON is not made for humans. You need additional tooling to query and read l
 
 ### Why doesn't Ratlog come with timestamps?
 
-Timestamps are a fundamental part of evented data such as application logs.
+Timestamps are a fundamental part of event-based data such as application logs.
 
 However in the context applications are embedded in a supervisor that is collecting the logs most likely already adds timestamps anyways.
 Therefore there is no need to duplicate that information.
@@ -232,7 +238,7 @@ If you have a [Docker](https://docker.com/) setup and you run `docker logs -t my
 2018-03-29T11:10:29.116Z [file-import|warning] file not found | code: 404 | path: /tmp/notfound.txt
 ```
 
-Similarly when using Systemd `journalctl -u myapp` includes timestamps in its output:
+Similarly when using SystemD `journalctl -u myapp` includes timestamps in its output:
 
 ```
 Apr 13 22:15:34 myhost myapp[1234]: [file-import|warning] file not found | code: 404 | path: /tmp/notfound.txt
@@ -285,7 +291,7 @@ For example, it wouldn't be helpful if `git` would try to display its output as 
 
 Mostly the output tools write to *stdout* is too specific and not *log-like*.
 But tools sometimes like to provide additional information about their state via *stderr*.
-That might be a good usecase of Ratlog.
+That might be a good use case of Ratlog.
 
 
 ### How do I collect metrics from Ratlog logs?
@@ -296,7 +302,7 @@ Logs are for humans. Metrics, events and other output are better collected separ
 ### How do I log errors?
 
 Errors should not be logged. Other tools are better suited at handling them (such as [Sentry](https://github.com/getsentry/sentry)).
-Tools specialized on collecting errors can provide many useful features such as grouping, silencing or linking stacktraces to source code.
+Tools specialized on collecting errors can provide many useful features such as grouping, silencing or linking stack-traces to source code.
 Those features are not in the scope of logging.
 
 
