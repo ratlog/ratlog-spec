@@ -163,7 +163,7 @@
     {
       "log": "hi | \n",
       "data": {
-        "message": "hi |",
+        "message": "hi",
         "fields": {
           "": null
         }
@@ -172,7 +172,10 @@
     {
       "log": "hi | hi: |\n",
       "data": {
-        "message": "hi |hi: |"
+        "message": "hi",
+        "fields": {
+          "hi": "|"
+        }
       }
     },
     {
@@ -184,7 +187,10 @@
     {
       "log": "hi | hi:|\n",
       "data": {
-        "message": "hi |hi:|"
+        "message": "hi",
+        "fields": {
+          "hi:|": null
+        }
       }
     },
     {
