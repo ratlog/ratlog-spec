@@ -49,9 +49,7 @@
           "count": "1",
           "event": "one"
         },
-        "tags": [
-          "event"
-        ]
+        "tags": ["event"]
       }
     },
     {
@@ -62,10 +60,7 @@
           "count": "1",
           "event": "one"
         },
-        "tags": [
-          "event",
-          "count"
-        ]
+        "tags": ["event", "count"]
       }
     },
     {
@@ -100,18 +95,14 @@
       "log": "[tag] hi\n",
       "data": {
         "message": "hi",
-        "tags": [
-          "tag"
-        ]
+        "tags": ["tag"]
       }
     },
     {
       "log": "[tag] hi | yo\n",
       "data": {
         "message": "hi",
-        "tags": [
-          "tag"
-        ],
+        "tags": ["tag"],
         "fields": {
           "yo": null
         }
@@ -121,9 +112,7 @@
       "log": "[tag] hi | yo :  \n",
       "data": {
         "message": "hi",
-        "tags": [
-          "tag"
-        ],
+        "tags": ["tag"],
         "fields": {
           "yo ": " "
         }
@@ -136,9 +125,7 @@
         "fields": {
           "count": "1"
         },
-        "tags": [
-          "tag"
-        ]
+        "tags": ["tag"]
       }
     }
   ],
@@ -146,7 +133,10 @@
     {
       "log": "count | count 1\n",
       "data": {
-        "message": "count| count 1"
+        "message": "count",
+        "fields": {
+          "count 1": null
+        }
       }
     },
     {
@@ -164,7 +154,7 @@
     {
       "log": "hi |  \n",
       "data": {
-        "message": "hi |",
+        "message": "hi",
         "fields": {
           " ": null
         }
@@ -173,7 +163,7 @@
     {
       "log": "hi | \n",
       "data": {
-        "message": "hi |",
+        "message": "hi",
         "fields": {
           "": null
         }
@@ -182,7 +172,10 @@
     {
       "log": "hi | hi: |\n",
       "data": {
-        "message": "hi |hi: |"
+        "message": "hi",
+        "fields": {
+          "hi": "|"
+        }
       }
     },
     {
@@ -194,16 +187,17 @@
     {
       "log": "hi | hi:|\n",
       "data": {
-        "message": "hi |hi:|"
+        "message": "hi",
+        "fields": {
+          "hi:|": null
+        }
       }
     },
     {
       "log": "[tag] hi | yo : \n",
       "data": {
         "message": "hi",
-        "tags": [
-          "tag"
-        ],
+        "tags": ["tag"],
         "fields": {
           "yo ": null
         }
@@ -213,18 +207,14 @@
       "log": "[tag] hi | yo :\n",
       "data": {
         "message": "hi | yo :",
-        "tags": [
-          "tag"
-        ]
+        "tags": ["tag"]
       }
     },
     {
       "log": "[tag] hi | yo: \n",
       "data": {
         "message": "hi",
-        "tags": [
-          "tag"
-        ],
+        "tags": ["tag"],
         "fields": {
           "yo": null
         }
