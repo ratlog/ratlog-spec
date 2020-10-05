@@ -65,11 +65,14 @@
     },
     {
       "log": "\n",
-      "data": {}
+      "data": {
+        "message": ""
+      }
     },
     {
       "log": " | count: 1 | event: 1\n",
       "data": {
+        "message": "",
         "fields": {
           "count": "1",
           "event": "1"
